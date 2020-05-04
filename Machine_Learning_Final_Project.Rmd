@@ -1,0 +1,329 @@
+---
+title: "Housing Price Project"
+author: "Echo Liu   Columbia University"
+date: "2019/12/6"
+output:
+  prettydoc::html_pretty:
+  theme: cayman
+highlight: github
+---
+  
+```{r setup, include=FALSE}
+library(prettydoc)
+library(knitr)
+opts_chunk$set(echo = TRUE, comment="", warning = FALSE, message = FALSE, tidy.opts=list(width.cutoff=55), tidy = FALSE)
+```
+
+## 1. Data Assessment
+### 1.1 Import Packages and Data
+```{r}
+library(readr)
+library(ggplot2)
+library(plyr)
+library(corrplot)
+library(caret)
+library(gridExtra)
+library(gplots)
+library(repr)
+library(glmnet) 
+library(scales)
+library(dplyr)
+library(car)
+library(randomForest)
+library(nnet)
+```
+
+```{r}
+train <- read.csv("/Users/echoliu/Desktop/house-prices-advanced-regression-techniques/train.csv")
+test <- read.csv("/Users/echoliu/Desktop/house-prices-advanced-regression-techniques/test.csv")
+dim(train) 
+dim(test)
+head(train)
+str(train)
+```
+
+
+### 1.2 Select Variables and Visualize Data
+
+In order to get a better understanding of the dataset, I decided to first see the top 10 variables that have a high correlation with the SalePrice. 
+
+```{r}
+numericVars <- which(sapply(train, is.numeric)) #index vector numeric variables
+numericVarNames <- names(numericVars) #saving names vector for use later on
+cat('There are', length(numericVars), 'numeric variables')
+
+train_numVar <- train[, numericVars]
+cor_numVar <- cor(train_numVar, use="pairwise.complete.obs") #correlations of train numeric variables
+
+#sort on decreasing correlations with SalePrice
+cor_sorted <- as.matrix(sort(cor_numVar[,'SalePrice'], decreasing = TRUE))
+ #select only high corelations
+CorHigh <- names(which(apply(cor_sorted, 1, function(x) abs(x)>0.5)))
+cor_numVar <- cor_numVar[CorHigh, CorHigh]
+
+corrplot.mixed(cor_numVar, tl.col="black", tl.pos = "lt")
+```
+
+As above, there are 10 out of 38 variables with a positive correlation of at least 0.5 with SalePrice.
+It also shows the multicollinearity issue. For instance, the correlation between GarageCars and GarageArea is very high at 0.89, and both have similar correlations with SalePrice. Same with TotRmsAbvGrd and GrLivArea, TotalBsmtSF and X1stFlrSF. These cases show how significant the correlation is between these variables, this correlation is so strong that it can indicate a situation of multicollinearity. If we think about these variables, we can conclude that they give almost the same information so we only need to choose one of them as key variables. 
+
+```{r}
+# scatter plot of GrLiveArea
+options(repr.plot.width=9, repr.plot.height=6)
+p1 <- ggplot(train, aes(x=GrLivArea, y=SalePrice)) + 
+  geom_point(shape=1) +  
+  geom_smooth(method=lm , color="blue", se=FALSE)+
+  ggtitle("Scatter plot of GrLivArea") +
+  theme(plot.title = element_text(hjust = 0.4))
+
+# scatter plot of TotalBsmtSF
+p2 <- ggplot(train, aes(x=TotalBsmtSF, y=SalePrice)) + 
+  geom_point(shape=1) +  
+  geom_smooth(method=lm , color="blue", se=FALSE)+
+  ggtitle("Scatter plot of TotalBsmtSF") +
+  theme(plot.title = element_text(hjust = 0.4))
+
+#scatter plot of TotRmsAbvGrd
+p3 <- ggplot(train, aes(x=TotRmsAbvGrd, y=SalePrice)) + 
+  geom_point(shape=1) +  
+  geom_smooth(method=lm , color="blue", se=FALSE)+
+  ggtitle("Scatter plot of TotRmsAbvGrd") +
+  theme(plot.title = element_text(hjust = 0.4))
+
+#scatter plot of GarageArea
+p4 <- ggplot(train, aes(x=GarageArea, y=SalePrice)) + 
+  geom_point(shape=1) +  
+  geom_smooth(method=lm , color="blue", se=FALSE)+
+  ggtitle("Scatter plot of GarageArea") +
+  theme(plot.title = element_text(hjust = 0.4))
+
+#scatter plot of GarageCars
+p5 <- ggplot(train, aes(x=GarageCars, y=SalePrice)) + 
+  geom_point(shape=1) +  
+  geom_smooth(method=lm , color="blue", se=FALSE)+
+  ggtitle("Scatter plot of GarageCars") +
+  theme(plot.title = element_text(hjust = 0.4))
+
+#scatter plot of FullBath
+p6 <- ggplot(train, aes(x=FullBath, y=SalePrice)) + 
+  geom_point(shape=1) +  
+  geom_smooth(method=lm , color="blue", se=FALSE)+
+  ggtitle("Scatter plot of FullBath") +
+  theme(plot.title = element_text(hjust = 0.4))
+
+#scatter plot of YearRemodAdd
+p7 <- ggplot(train, aes(x=YearRemodAdd, y=SalePrice)) + 
+  geom_point(shape=1) +  
+  geom_smooth(method=lm , color="blue", se=FALSE)+
+  ggtitle("Scatter plot of YearRemodAdd") +
+  theme(plot.title = element_text(hjust = 0.4))
+grid.arrange(p1,p2,p3,p4,p5,p6,p7)
+
+
+```
+
+
+The scatter plot below confirms my opinion.GrLivArea, TotalBsmtSF, TotRmsAbvGrd, and GarageArea are positively correlated with SalePrice,which means that as one variable increases, the other also increases. In the case of 'TotalBsmtSF', we can see that the slope of the linear relationship is particularly high.and it makes sense that big houses are generally more expensive. 
+One of the figures we may find interesting is the one between 'TotalBsmtSF' and 'GrLiveArea'. In this figure we can see the dots drawing a linear line, which almost acts like a border. It totally makes sense that the majority of the dots stay below that line. Basement areas can be equal to the above ground living area, but it is not expected a basement area bigger than the above ground living area.
+*
+
+In addition, I take a extra look at OverallQual since it has the highest correlation rate with SalePrice. Below are the plots. 
+```{r}
+ggplot(data=train[!is.na(train$SalePrice),], aes(x=factor(OverallQual), y=SalePrice))+
+        geom_boxplot(col='blue') + labs(x='Overall Quality') +
+        scale_y_continuous(breaks= seq(0, 800000, by=100000), labels = comma)
+```
+
+Obviously, there is a positive correlation between OverallQual and SalePrice.There are some potential outliers in the expensive house with grade 4, 8, 9, and 10. Let's see this variable in histogram plot to have a better understanding.
+
+```{r}
+ggplot(train, aes(x = SalePrice,fill = as.factor(OverallQual))) +
+  geom_histogram(position = "stack", binwidth = 10000) +
+  ggtitle("Histogram of Overall House Quality") +
+  ylab("Count") +
+  xlab("Housing Price") + 
+  scale_fill_discrete(name="OverallQual")+
+  theme(plot.title = element_text(hjust = 0.5), legend.position=c(0.9,0.7), legend.background = element_rect(fill="grey90",
+                                                                                                           size=0.5, linetype="solid", 
+                                                                                                           colour ="black"))
+```
+
+As we saw in graph above, most houses are with OverallQuall of 4,5,6 and 7, the higher rate of overall quality, the higher house sale price. 
+*
+
+I also plot the YearBuilt variable and there is also a positive correlation relationship with SalePrice based on the plot below.
+```{r}
+train %>% ggplot(aes(YearBuilt, SalePrice)) + geom_point(alpha = 0.5) + stat_smooth(method = "lm", formula = SalePrice ~ YearBuild + I(YearBuild^2))
+```
+
+To summarize, I decide to use 8 key variables to predict the models: OverallQual, GrLivArea, TotalBsmtSF, TotRmsAbvGrd, GarageArea, FullBath, YearBuilt,YearRemodAdd. 
+
+
+### 1.3 Check missing values
+```{r}
+na.cols <- which(colSums(is.na(train)) > 0)
+sort(colSums(sapply(train[na.cols], is.na)), decreasing = TRUE)
+# list rows of data that have missing values 
+missing.r <- train[!complete.cases(train),]
+head(missing.r)
+```
+
+
+## 2. Data exploration 
+### 2.1 Analyze the outcome, SalePrice
+```{r}
+summary(train$SalePrice)
+options(scipen=10000)
+ggplot(train, aes(x = SalePrice, fill = ..count..)) +
+  geom_histogram(binwidth = 5000) +
+  ggtitle("Figure 1 Histogram of SalePrice") +
+  ylab("Count of Houses") +
+  xlab("Housing Price") + 
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+As we can see, the sale prices are right skewed, this was expected because few people can afford highly expensive houses. A log term of SalePirce should be generated for linear regression, so that it is normally distributed. 
+```{r}
+train$lSalePrice <- log(train$SalePrice)
+ggplot(train, aes(x = lSalePrice, fill = ..count..)) +
+  geom_histogram(binwidth = 0.05) +
+  ggtitle("Figure 2 Histogram of log SalePrice") +
+  ylab("Count of Houses") +
+  xlab("Housing Price") + 
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+
+### 2.2 Normalize Data
+
+```{r}
+set.seed(5678)
+data2 = select(train, OverallQual, GrLivArea, TotalBsmtSF, TotRmsAbvGrd, GarageArea, FullBath, YearBuilt,YearRemodAdd,SalePrice)
+# Normalize the data
+data2[,-9] = as.data.frame(scale(data2[,-9]))
+trainid <- createDataPartition(data2$SalePrice, p = 0.8,list = FALSE,times = 1)
+train2 <- data2[trainid,]
+other = data2[-trainid,]
+
+test_id = createDataPartition(other$SalePrice, p = 0.5,list = FALSE,times = 1)
+test2 <- other[test_id,]
+valid <- other[-test_id,]
+
+head(train2)
+#as.data.frame(table(train$Utilities))
+```
+### 2.3 Feature selection
+```{r}
+start_mod = lm(SalePrice~1,train2)
+empty_mod = lm(SalePrice~1,train2)
+full_mod = lm(SalePrice~.,train2)
+forwardStepwise = step(start_mod,scope=list(upper=full_mod,lower=empty_mod),direction='forward')
+```
+
+## 3. Model Selection
+### 3.1 Linear Regression Model
+```{r}
+# Based on the forward selection, we choose the following linear model
+linear_model = lm(SalePrice ~ OverallQual + GrLivArea + TotalBsmtSF + 
+    TotRmsAbvGrd + GarageArea + FullBath + YearBuilt +
+    YearRemodAdd, train2)
+summary(linear_model)
+```
+
+```{r}
+# Find outliers and remove them
+outlierTest(linear_model)
+k=as.numeric(names(outlierTest(linear_model)$bonf.p))
+train=train[-k,]
+
+linear_model2 = lm(SalePrice ~ OverallQual + GrLivArea +
+    TotRmsAbvGrd + GarageArea + FullBath + YearBuilt +
+    YearRemodAdd, train)
+summary(linear_model2)
+
+# RMSE of training data
+pred = predict(linear_model2)
+sse = sum((pred - train2$SalePrice)^2)
+sst = sum((mean(train2$SalePrice)-train2$SalePrice)^2)
+model_r2 = 1 - sse/sst; model_r2
+rmse = sqrt(mean((pred-train2$SalePrice)^2)); 
+rmse
+```
+```{r}
+# RMSE of test data
+pred = predict(linear_model2, newdata = test2)
+sse = sum((pred - test2$SalePrice)^2)
+sst = sum((mean(test2$SalePrice)-test2$SalePrice)^2)
+model_r2 = 1 - sse/sst; model_r2
+rmse = sqrt(mean((pred-test2$SalePrice)^2)); rmse
+
+# RMSE of validation data
+pred = predict(linear_model2, newdata = valid)
+sse = sum((pred - valid$SalePrice)^2)
+sst = sum((mean(valid$SalePrice)-valid$SalePrice)^2)
+model_r2 = 1 - sse/sst; model_r2
+rmse = sqrt(mean((pred-valid$SalePrice)^2)); rmse
+```
+
+### 3.2 Random Forest Model
+```{r}
+# Predict the house price using random forest
+set.seed(100)
+forest = randomForest(SalePrice ~ OverallQual + GrLivArea + TotalBsmtSF + TotRmsAbvGrd + GarageArea + FullBath + YearBuilt + YearRemodAdd,train2) 
+
+
+# RMSE of training data
+pred = predict(forest)
+sse = sum((pred - train2$SalePrice)^2)
+sst = sum((mean(train2$SalePrice)-train2$SalePrice)^2)
+model_r2 = 1 - sse/sst; model_r2
+rmse = sqrt(mean((pred-train2$SalePrice)^2)); rmse
+
+# RMSE of test data
+pred = predict(forest, newdata = test2)
+sse = sum((pred - test2$SalePrice)^2)
+sst = sum((mean(test2$SalePrice)-test2$SalePrice)^2)
+model_r2 = 1 - sse/sst; model_r2
+rmse = sqrt(mean((pred-test2$SalePrice)^2)); rmse
+
+# RMSE of validation data
+pred = predict(forest, newdata = valid)
+sse = sum((pred - valid$SalePrice)^2)
+sst = sum((mean(valid$SalePrice)-valid$SalePrice)^2)
+model_r2 = 1 - sse/sst; model_r2
+rmse = sqrt(mean((pred-valid$SalePrice)^2)); rmse
+```
+
+
+### 3.3 Neural Network Model 
+```{r}
+# Predict the house price with Neural Network
+network = nnet(SalePrice ~ OverallQual + GrLivArea + TotalBsmtSF + 
+    TotRmsAbvGrd + GarageArea + FullBath + YearBuilt +
+    YearRemodAdd, train2, size = 8, linout = TRUE)
+
+
+
+# RMSE of training data
+pred = predict(network)
+sse = sum((pred - train2$SalePrice)^2)
+sst = sum((mean(train2$SalePrice)-train2$SalePrice)^2)
+model_r2 = 1 - sse/sst; model_r2
+rmse = sqrt(mean((pred-train2$SalePrice)^2)); rmse
+
+# RMSE of test data
+pred = predict(network, newdata = test2)
+sse = sum((pred - test2$SalePrice)^2)
+sst = sum((mean(test2$SalePrice)-test2$SalePrice)^2)
+model_r2 = 1 - sse/sst; model_r2
+rmse = sqrt(mean((pred-test2$SalePrice)^2)); rmse
+
+# RMSE of validation data
+pred = predict(network, newdata = valid)
+sse = sum((pred - valid$SalePrice)^2)
+sst = sum((mean(valid$SalePrice)-valid$SalePrice)^2)
+model_r2 = 1 - sse/sst; model_r2
+rmse = sqrt(mean((pred-valid$SalePrice)^2)); rmse
+```
+
+
