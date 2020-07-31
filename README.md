@@ -61,4 +61,26 @@ As we discussed above, the distribution of 'SalePrice' is right-skewed which is 
 In addition, I use forward stepwise feature selection so that after each step in which a variable was added, all candidate variables in the model are checked to see if their significance has been reduced below the tolerance level. If a nonsignificant variable is found, it is removed from the model.
 
 ---
-###
+### 6. Results
+All three models result in very high RMSE score. Large RMSE indicates that there is a need to include more variables instead of only 8 out of 80 to reduce the RMSE. On the other hand, it indicates that all variables I select are essential for house price prediction. The overall material and finish of the house, original construction date, remodel date, total square feet of basement area, above grade living area square feet, full bathrooms above grade, total rooms above grade and size of a garage in square feet are the most important features when purchasing a house. It solves the problem that people get lost when considering all aspects of a house, which provides a clear and statistical proven range on aspects that really matters for house price.
+
+For the linear regression model, the Adjusted R-squared value is 0.7983, meaning adjusts the R-squared based on the number of independent variables in the model.
+
+For random forest model and neural network, validation data has the smallest RMSE, indicating there is no overfitting problem.
+
+---
+### 7. Limitations
+
+Variable Selection:
+
+The number of variables I selected is small, although they are highly correlated with the outcome, it is not comprehensive and fully representative and there are lots more correlated variables I failed to analyze.
+
+Handling missing value:
+
+For time-saving and convenience consideration, I got rid of the observations that have missing data. However, I risk losing data points with valuable information. There are some important and correlated variables with missing values such as BsmtQual,Variable Selection:
+
+The number of variables I selected is small, although they are highly correlated with the outcome, it is not comprehensive and fully representative and there are lots more correlated variables I failed to analyze.
+
+Handling missing value:
+
+For time-saving and convenience consideration, I got rid of the observations that have missing data. However, I risk losing data points with valuable information. There are some important and correlated variables with missing values such as BsmtQual,
