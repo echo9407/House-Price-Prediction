@@ -9,13 +9,11 @@ There are some methods that have been used to predict house price: online valuat
 The objective of this project is to utilize data visualization, feature selection and feature engineering, and machine learning models to predict house prices. Additionally, it is aimed to minimize the difference between predicted and actual rating (RMSE /MSE) The house price prediction dataset contains 79 explanatory variables describing the majority aspects of residential homes in Ames, Iowa, and 1460 observations in training data while the testing data consists of 1459 observations.
 
 ---
-
 ### 2. Hypotheses 
 
 **Hypotheses: What variables are highly relevant to determine the sales price?** To be more specific, whether the following features including LotArea, Neighborhood, OverallQual, Full Bath, YearBuilt, TotalBsmtSF, CentralAir, GrLivArea, GarageArea, will be able to predict the outcome, the housing price.
 
 ---
-
 ### 3. Data Processing and Exploration (more information and graphs are in the final report) 
 The training dataset has 1460 observations and 81 variables, and 1459 observations and 80 variables are in the test dataset. In order to get a better understanding and comprehensiveness of the dataset, I decided to first see the top 10 variables that have a high correlation with the SalePrice.
 
@@ -26,3 +24,41 @@ The scatter plot confirms my opinion.GrLivArea, TotalBsmtSF, TotRmsAbvGrd, and G
 One of the figures we may find interesting is the one between 'TotalBsmtSF' and 'GrLiveArea'. In this figure, we can see the dots drawing a linear line, which almost acts like a border. It totally makes sense that the majority of the dots stay below that line. Basement areas can be equal to the above-ground living area, but it is not expected a basement area bigger than the above-ground living area.
 
 In addition, I take an extra look at OverallQual since it has the highest correlation rate with SalePrice.
+
+To summarize, I decide to use 8 key variables to predict the models: OverallQual, GrLivArea, TotalBsmtSF, TotRmsAbvGrd, GarageArea, FullBath, YearBuilt, YearRemodAdd.
+
+The next step is checking missing data. Many real-world data-sets may contain missing values for various reasons. They are often encoded as NaNs, blanks or any other placeholders. Training a model with a data-set that has a lot of missing values can drastically impact the machine learning model’s quality.
+
+We'll consider that when more than 15% of the data is missing, we should delete the corresponding variable and pretend it never existed. This means that we will not try any trick to fill the missing data in these cases. According to this, none of these variables seems to be very important since most of them are not aspects in which we think about when buying a house (maybe that's the reason why data is missing?). Moreover, looking closer at the variables, we could say that variables like 'PoolQC', 'MiscFeature' and 'FireplaceQu' are strong candidates for outliers, so we'll be happy to delete them. In addition, there are no NA values in my selected variables, I skipped the part of handling Null Values. However, it brings some major issue that I will discuss in the limitation part.
+
+
+---
+### 4. Modeling
+
+SalePrice is our target variable and also the dependent variable for prediction. Before building models to predict the outcome, SalePrice, there is a need to analyze the outcome itself.
+
+As we can see, the sale prices are right-skewed, this was expected because few people can afford highly expensive houses.
+
+In data normalization, I split the training, test, and validation data.
+
+Once the data is processed we will now proceed further to make our machine learning model. Next step would be the feature selection detailed in section c, and building models, including linear regression model, random forest model, and neural network model.
+
+**Linear Regression Model:**
+
+As our target variable is continuous we will fit a regression model to the dataset. The aim of this model is to minimize the sum of the squared residuals. Here I select 8 variables to fit into this model: OverallQual , GrLivArea , TotalBsmtSF , TotRmsAbvGrd , GarageArea , FullBath , YearBuilt , YearRemodAdd. I first find outliers and remove them in the dataset. Then I divide datasets into three parts -- training, test, and validation, to prepare for prediction later. Then I ran the model to calculate the RMSE. The RMSE for test data is the best result comparing to the other two.
+
+**Random Forest Model:**
+
+**Neural Network Model:**
+
+Variable used: OverallQual , GrLivArea , TotalBsmtSF , TotRmsAbvGrd , GarageArea , FullBath , YearBuilt , YearRemodAdd.
+
+---
+### 5. Consideration of feature Selection, transformations, or feature engineering steps
+
+As we discussed above, the distribution of 'SalePrice' is right-skewed which is positive. We would like to get the skewness factor as close to zero as possible. This can be accomplished by either removing outliers or transforming the variable. Removing outliers may be tricky as expertise in real estate is needed to assess whether outliers should be removed or not. Applying transformations is typically a safer option if it can deliver the desired outcome. In the case of positive skewness, log transformation does the trick.
+
+In addition, I use forward stepwise feature selection so that after each step in which a variable was added, all candidate variables in the model are checked to see if their significance has been reduced below the tolerance level. If a nonsignificant variable is found, it is removed from the model.
+
+---
+###
