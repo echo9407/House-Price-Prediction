@@ -14,7 +14,7 @@ The objective of this project is to utilize data visualization, feature selectio
 **Hypotheses: What variables are highly relevant to determine the sales price?** To be more specific, whether the following features including LotArea, Neighborhood, OverallQual, Full Bath, YearBuilt, TotalBsmtSF, CentralAir, GrLivArea, GarageArea, will be able to predict the outcome, the housing price.
 
 
-### 3. Data Processing and Exploration (more in [project report] (https://github.com/echo9407/House-Price-Prediction/blob/master/Machine%20Learning%20Final%20Report.pdf)
+### 3. Data Processing and Exploration more in [project report] (https://github.com/echo9407/House-Price-Prediction/blob/master/Machine%20Learning%20Final%20Report.pdf)
 
 The training dataset has 1460 observations and 81 variables, and 1459 observations and 80 variables are in the test dataset. In order to get a better understanding and comprehensiveness of the dataset, I decided to first see the top 10 variables that have a high correlation with the SalePrice.
 
