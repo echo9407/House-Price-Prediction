@@ -33,7 +33,7 @@ We'll consider that when more than 15% of the data is missing, we should delete 
 
 
 ---
-### 4. Modeling
+### 4. Modeling ( for more info, go to master branch)
 
 SalePrice is our target variable and also the dependent variable for prediction. Before building models to predict the outcome, SalePrice, there is a need to analyze the outcome itself.
 
