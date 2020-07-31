@@ -11,4 +11,4 @@ The objective of this project is to utilize data visualization, feature selectio
 
 ### 2. Hypotheses 
 
-Hypotheses: **What variables are highly relevant to determine the sales price?** To be more specific, whether the following features including LotArea, Neighborhood, OverallQual, Full Bath, YearBuilt, TotalBsmtSF, CentralAir, GrLivArea, GarageArea, will be able to predict the outcome, the housing price.
+**Hypotheses: What variables are highly relevant to determine the sales price?** To be more specific, whether the following features including LotArea, Neighborhood, OverallQual, Full Bath, YearBuilt, TotalBsmtSF, CentralAir, GrLivArea, GarageArea, will be able to predict the outcome, the housing price.
