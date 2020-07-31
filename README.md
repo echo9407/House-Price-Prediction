@@ -1,6 +1,6 @@
 ## House Price Prediction Project 
 
-### 1. Introduction and background section
+### 1. Introduction 
 
 How to determine home value has been a common problem for every household. Knowing how to calculate your home’s value with the help of online valuation tools and trained professionals better prepares you to buy, sell, refinance or even negotiate lower property taxes.
 
@@ -12,3 +12,9 @@ The objective of this project is to utilize data visualization, feature selectio
 ### 2. Hypotheses 
 
 **Hypotheses: What variables are highly relevant to determine the sales price?** To be more specific, whether the following features including LotArea, Neighborhood, OverallQual, Full Bath, YearBuilt, TotalBsmtSF, CentralAir, GrLivArea, GarageArea, will be able to predict the outcome, the housing price.
+
+
+### 3. Data Processing and Exploration (more in [project report] (https://github.com/echo9407/House-Price-Prediction/blob/master/Machine%20Learning%20Final%20Report.pdf)
+
+The training dataset has 1460 observations and 81 variables, and 1459 observations and 80 variables are in the test dataset. In order to get a better understanding and comprehensiveness of the dataset, I decided to first see the top 10 variables that have a high correlation with the SalePrice.
+
