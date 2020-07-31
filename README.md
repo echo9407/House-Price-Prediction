@@ -71,17 +71,17 @@ For random forest model and neural network, validation data has the smallest RMS
 ---
 ### 7. Limitations
 
-Variable Selection:
+**Variable Selection:**
 The number of variables I selected is small, although they are highly correlated with the outcome, it is not comprehensive and fully representative and there are lots more correlated variables I failed to analyze.
 
-Handling missing value:
+**Handling missing value:**
 For time-saving and convenience consideration, I got rid of the observations that have missing data. However, I risk losing data points with valuable information. There are some important and correlated variables with missing values such as BsmtQual,BsmtCond, and GarageQual. The results would be more accurate if I filled in median numbers in NA values or impute them by proceeding sequentially through features with missing values.
 
-Multicollinearity:
+**Multicollinearity:**
 The corrplot above shows the multicollinearity issue. For instance, the correlation between GarageCars and GarageArea is very high at 0.89, and both have similar correlations with SalePrice. Same with TotRmsAbvGrd and GrLivArea, TotalBsmtSF and X1stFlrSF. These cases show how significant the correlation is between these variables, this correlation is so strong that it can indicate a situation of multicollinearity. 
 
-Outliners:
+**Outliners:**
 Outliers is also something that we should be aware of, because outliers can markedly affect our models and can be a valuable source of information, providing us insights about specific behaviours. Outliers is a complex subject and it deserves more attention. However, due to the limit of time and energy, I failed to analyze the outliers through the standard deviation of SalePrice. If time is generous, I would like to do som univariate analysis and bivariate analysis.
 
-Variable transformation:
+**Variable transformation:**
 There are some numerical variables that are really categorical such as OverallCond, YrSold and MoSold. I can also do some label encoding to some categorical variable that may contain information in their ordering sets, such as ExterQual, PoolQC, and CentralAir.
