@@ -85,3 +85,19 @@ Outliers is also something that we should be aware of, because outliers can mark
 
 **Variable transformation:**
 There are some numerical variables that are really categorical such as OverallCond, YrSold and MoSold. I can also do some label encoding to some categorical variable that may contain information in their ordering sets, such as ExterQual, PoolQC, and CentralAir.
+
+
+---
+### 8. Reflection
+Some house description in text format would be helpful for this dataset by sentimental analysis. Description from different groups of people would be more objective and diverse, sellers and agents may over compliment the house whereas to the contrary, buyers may underestimate the house to get a better deal. The sentimental analysis would help each side of representatives to understand the social sentiment of their house, while monitoring online conversations.
+
+--- 
+### 9. Summary 
+Based on the results of all my models, the findings stand together with my original hypothesis that besides the most important layout of a house, the availability of garage area, building year, total square feet of basement and number of full bathrooms are essential when predicting the house price.
+
+Relate to earlier research work on real estate, we can see that as an important property type, the price of houses depends on a lot of different variables, including the layout, condition, function, location of the house, as well as some macroeconomic factors. Thus, when predicting the prices, all these variables need to be taken into consideration, or, the result will be too restricted and deviate from the true market value.
+
+Analyzing the neighbourhood into house prediction could be a bit tricky. The education and social level of neighbourhood have an important impact that may raise some social issues. If the education level of surroundings is relatively low, the house price would more likely to drop, which seems unfair. I was surprised that FullBath variable is highly correlated with house price. Personally, it would be a small portation to consider when I purchase the house, but not in the statistical findings.
+
+As we state at the beginning of the project, knowing the correlated variables that would heavily affect the house price would provide a more accurate price prediction. It provides lots of useful information when we consider purchasing a house on a later day, such as garage areas, basement quality, full bath and building year, preventing us from agents and agencies that may hide the real truth and exaggerate unimportantly features that shake our minds.
+
